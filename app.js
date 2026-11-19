@@ -1,6 +1,6 @@
 // 1) Incolla qui i dati del tuo progetto Supabase (Project Settings -> API)
-var URL_SUPABASE = 'INCOLLA_QUI_URL';
-var CHIAVE_SUPABASE = 'INCOLLA_QUI_CHIAVE_ANON';
+var URL_SUPABASE = 'https://lrcjipumypfjbnhhgjlp.supabase.co/rest/v1/';
+var CHIAVE_SUPABASE = 'sb_publishable__kDUk8RsXBy_HQf55EF14w_VJtgGmCi';
 
 var db = supabase.createClient(URL_SUPABASE, CHIAVE_SUPABASE);
 var profilo = null, voci = [], filtro = 'tutte';
