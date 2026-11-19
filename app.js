@@ -57,7 +57,7 @@ async function avvia() {
   el('schermataAccesso').style.display = 'none';
   el('schermataApp').style.display = 'block';
   el('saluto').textContent = profilo.nome + (sonoAdmin() ? ' · admin' : '');
-  el('schedaAdmin').style.display = sonoAdmin() ? 'block' : 'none';
+  el('schedaAdmin').style.display = sonoAdmin() ? 'flex' : 'none';
   giornoScelto = oggiIso();
   await caricaTutto();
   ['voci', 'partecipazioni', 'comunicazioni'].forEach(function (t) {
@@ -108,34 +108,43 @@ function boxPartecipazione(v) {
   if (no.length) box.appendChild(crea('div', 'partecipazione-nomi', 'Non ci sono: ' + nomi(no)));
   return box;
 }
-function cartaVoce(v) {
-  var c = crea('div', 'carta tipo-' + v.tipo);
-  var testa = crea('div', 'voce-testa');
-  testa.appendChild(crea('span', 'etichetta-tipo', nomiTipo[v.tipo]));
-  if (v.materia) testa.appendChild(crea('span', 'etichetta-materia', v.materia));
-  testa.appendChild(crea('span', 'voce-data', dataBreve(v.data)));
-  c.appendChild(testa);
-  c.appendChild(crea('div', 'voce-titolo', v.titolo));
-  if (v.argomenti) c.appendChild(riga('Argomenti', v.argomenti));
-  if (v.note) c.appendChild(riga('Note', v.note));
+function iniziali(n) { return (n || '?').split(/\s+/).map(function (x) { return x.charAt(0); }).slice(0, 2).join('').toUpperCase(); }
+function cartaVoce(v, conData) {
+  var c = crea('div', 'carta voce tipo-' + v.tipo);
+  if (conData) {
+    var bd = crea('div', 'blocco-data');
+    bd.appendChild(crea('div', 'blocco-numero', String(daIso(v.data).getDate())));
+    bd.appendChild(crea('div', 'blocco-mese', daIso(v.data).toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')));
+    c.appendChild(bd);
+  }
+  var corpo = crea('div', 'voce-corpo');
+  var sopra = crea('div', 'voce-sopra');
+  sopra.appendChild(crea('span', 'voce-tipo', nomiTipo[v.tipo]));
+  if (v.materia) sopra.appendChild(crea('span', 'voce-materia', '  ·  ' + v.materia));
+  corpo.appendChild(sopra);
+  corpo.appendChild(crea('div', 'voce-titolo', v.titolo));
+  if (v.argomenti) corpo.appendChild(riga('Argomenti', v.argomenti));
+  if (v.note) corpo.appendChild(riga('Note', v.note));
   if (v.link && /^https?:\/\//i.test(v.link)) {
     var rl = crea('div', 'voce-riga');
     var a = crea('a', '', 'Apri il link'); a.href = v.link; a.target = '_blank'; a.rel = 'noopener noreferrer';
-    rl.appendChild(a); c.appendChild(rl);
+    rl.appendChild(a); corpo.appendChild(rl);
   }
-  if (v.tipo === 'evento') c.appendChild(boxPartecipazione(v));
-  c.appendChild(crea('div', 'voce-autore', 'Aggiunta da ' + nomeAutore(v)));
+  if (v.tipo === 'evento') corpo.appendChild(boxPartecipazione(v));
+  var pie = crea('div', 'voce-autore');
+  pie.appendChild(crea('span', 'avatar', iniziali(nomeAutore(v))));
+  pie.appendChild(crea('span', '', 'Aggiunta da ' + nomeAutore(v)));
+  corpo.appendChild(pie);
   var az = crea('div', 'voce-azioni');
-  var bc = crea('button', 'bottone piccolo', 'Calendario'); bc.type = 'button'; bc.onclick = function () { scaricaIcs(v); };
-  var bw = crea('button', 'bottone piccolo', 'WhatsApp'); bw.type = 'button'; bw.onclick = function () { condividi(v); };
-  az.appendChild(bc); az.appendChild(bw);
+  function azione(testo, classe, fn) { var b = crea('button', 'azione' + (classe ? ' ' + classe : ''), testo); b.type = 'button'; b.onclick = fn; az.appendChild(b); }
+  azione('Calendario', '', function () { scaricaIcs(v); });
+  azione('WhatsApp', '', function () { condividi(v); });
   if (puoModificare(v)) {
-    var bm = crea('button', 'bottone piccolo', 'Modifica'); bm.type = 'button'; bm.onclick = function () { apriFinestra(v); };
-    var be = crea('button', 'bottone piccolo pericolo', 'Elimina'); be.type = 'button';
-    be.onclick = async function () { if (confirm('Eliminare questa voce?')) { if (!errore(await db.from('voci').delete().eq('id', v.id))) caricaTutto(); } };
-    az.appendChild(bm); az.appendChild(be);
+    azione('Modifica', '', function () { apriFinestra(v); });
+    azione('Elimina', 'pericolo', async function () { if (confirm('Eliminare questa voce?')) { if (!errore(await db.from('voci').delete().eq('id', v.id))) caricaTutto(); } });
   }
-  c.appendChild(az);
+  corpo.appendChild(az);
+  c.appendChild(corpo);
   return c;
 }
 function sezione(titolo, sotto, classe) {
@@ -145,9 +154,9 @@ function sezione(titolo, sotto, classe) {
   s.appendChild(t);
   return s;
 }
-function riempi(sez, lista, vuoto) {
+function riempi(sez, lista, vuoto, conData) {
   if (!lista.length) sez.appendChild(crea('p', 'vuoto', vuoto));
-  else lista.forEach(function (v) { sez.appendChild(cartaVoce(v)); });
+  else lista.forEach(function (v) { sez.appendChild(cartaVoce(v, conData)); });
 }
 function raggruppaPerData(contenitore, lista) {
   var ultima = '';
@@ -162,6 +171,23 @@ function disegnaHome() {
   var c = el('vistaHome'); c.innerHTML = '';
   var oggi = oggiIso(), domani = piuGiorni(oggi, 1), fra7 = piuGiorni(oggi, 7);
   var future = voci.filter(function (v) { return v.data >= oggi; });
+
+  var deDomani = voci.filter(function (v) { return v.data === domani; });
+  var eroe = crea('div', 'eroe');
+  eroe.appendChild(crea('div', 'eroe-saluto', 'Ciao ' + profilo.nome.split(' ')[0]));
+  eroe.appendChild(crea('div', 'eroe-frase', deDomani.length ? 'Domani hai ' + deDomani.length + (deDomani.length === 1 ? ' cosa' : ' cose') + ' in programma' : 'Domani niente in programma'));
+  if (deDomani.length) {
+    var parti = [];
+    ['verifica', 'interrogazione', 'compito', 'evento'].forEach(function (t) {
+      var n = deDomani.filter(function (v) { return v.tipo === t; }).length;
+      if (n) parti.push(n + ' ' + (n === 1 ? nomiTipo[t] : nomiTipoPlurale[t]).toLowerCase());
+    });
+    eroe.appendChild(crea('div', 'eroe-dettaglio', parti.join(' · ')));
+    var bs = crea('button', 'bottone piccolo', 'Condividi su WhatsApp'); bs.type = 'button';
+    bs.onclick = function () { condividiGiorno(domani, deDomani); };
+    eroe.appendChild(bs);
+  }
+  c.appendChild(eroe);
 
   var ri = crea('div', 'riepilogo');
   ['verifica', 'interrogazione', 'compito', 'evento'].forEach(function (t) {
@@ -197,7 +223,7 @@ function disegnaHome() {
   riempi(so, voci.filter(function (v) { return v.data === oggi; }), 'Niente in programma per oggi.');
   c.appendChild(so);
   var sp = sezione('Prossimi giorni', 'fino a ' + dataBreve(fra7));
-  riempi(sp, voci.filter(function (v) { return v.data > domani && v.data <= fra7; }), 'Niente nei prossimi giorni.');
+  riempi(sp, voci.filter(function (v) { return v.data > domani && v.data <= fra7; }), 'Niente nei prossimi giorni.', true);
   c.appendChild(sp);
 }
 
@@ -225,7 +251,7 @@ function disegnaCalendario() {
     var iso = isoDi(new Date(anno, mese, n));
     var cella = crea('button', 'cella-giorno' + (iso === oggi ? ' oggi' : '') + (iso === giornoScelto ? ' scelto' : ''));
     cella.type = 'button';
-    cella.appendChild(crea('span', '', String(n)));
+    cella.appendChild(crea('span', 'numero', String(n)));
     var pu = crea('div', 'puntini');
     var visti = {};
     voci.forEach(function (v) { if (v.data === iso && !visti[v.tipo]) { visti[v.tipo] = true; pu.appendChild(crea('span', 'puntino tipo-' + v.tipo)); } });
@@ -274,7 +300,7 @@ function disegnaMaterie() {
     var lista = voci.filter(function (v) { return v.data >= oggi && (v.materia || 'Generale') === m; });
     if (!lista.length) { senza.push(m); return; }
     var s = sezione(m, lista.length + (lista.length === 1 ? ' voce' : ' voci'));
-    lista.forEach(function (v) { s.appendChild(cartaVoce(v)); });
+    lista.forEach(function (v) { s.appendChild(cartaVoce(v, true)); });
     c.appendChild(s);
   });
   if (senza.length) c.appendChild(crea('p', 'materia-vuote', 'Niente in programma: ' + senza.join(', ') + '.'));
@@ -417,9 +443,26 @@ function scaricaIcs(v) {
   a.download = 'diario3ds-' + v.id + '.ics';
   document.body.appendChild(a); a.click(); a.remove();
 }
+var emojiTipo = { verifica: '📝', interrogazione: '🎤', compito: '📚', evento: '🎉' };
+function maiusc(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+function testoVoce(v, conData) {
+  var r = [emojiTipo[v.tipo] + ' *' + nomiTipo[v.tipo] + (v.materia ? ' di ' + v.materia : '') + '*', '«' + v.titolo + '»'];
+  if (conData) r.push('🗓️ ' + maiusc(dataLunga(v.data)));
+  if (v.argomenti) r.push('📖 ' + v.argomenti);
+  if (v.note) r.push('💬 ' + v.note);
+  if (v.link && /^https?:\/\//i.test(v.link)) r.push('🔗 ' + v.link);
+  r.push('✍️ Aggiunta da ' + nomeAutore(v));
+  return r.join('\n');
+}
+function inviaWhatsApp(t) { window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank'); }
 function condividi(v) {
-  var t = nomiTipo[v.tipo] + (v.materia ? ' di ' + v.materia : '') + ' – ' + v.titolo + ' (' + dataLunga(v.data) + ')' + (v.argomenti ? '\nArgomenti: ' + v.argomenti : '');
-  window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank');
+  var oggi = oggiIso(), quando = v.data === oggi ? '⏰ *OGGI*\n' : (v.data === piuGiorni(oggi, 1) ? '⏰ *DOMANI*\n' : '');
+  inviaWhatsApp('📒 *DIARIO 3DS*\n' + quando + '━━━━━━━━━━━━\n' + testoVoce(v, true) + '\n━━━━━━━━━━━━\n_Diario condiviso della 3DS_');
+}
+function condividiGiorno(iso, lista) {
+  var etichetta = iso === piuGiorni(oggiIso(), 1) ? 'DOMANI' : iso === oggiIso() ? 'OGGI' : 'IN PROGRAMMA';
+  var corpo = lista.map(function (v) { return testoVoce(v, false); }).join('\n\n');
+  inviaWhatsApp('📒 *DIARIO 3DS*\n⏰ *' + etichetta + '* · ' + maiusc(dataLunga(iso)) + '\n━━━━━━━━━━━━\n' + corpo + '\n━━━━━━━━━━━━\n_Diario condiviso della 3DS_');
 }
 
 // ---------- avvio ----------
