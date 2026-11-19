@@ -1,5 +1,5 @@
 // 1) Incolla qui i dati del tuo progetto Supabase (Project Settings -> API)
-var URL_SUPABASE = 'https://lrcjipumypfjbnhhgjlp.supabase.co/rest/v1/';
+var URL_SUPABASE = 'https://lrcjipumypfjbnhhgjlp.supabase.co';
 var CHIAVE_SUPABASE = 'sb_publishable__kDUk8RsXBy_HQf55EF14w_VJtgGmCi';
 
 var db = supabase.createClient(URL_SUPABASE, CHIAVE_SUPABASE);
