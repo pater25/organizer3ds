@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#14213D">
+<title>Diario 3DS</title>
+<link rel="stylesheet" href="stile.css">
+</head>
+<body>
+
+<div id="schermataAccesso">
+  <h1 id="titoloAccesso">Diario 3DS</h1>
+  <input class="campo" id="campoNome" type="text" placeholder="Nome (solo per registrarti)">
+  <input class="campo" id="campoEmail" type="email" placeholder="Email">
+  <input class="campo" id="campoPassword" type="password" placeholder="Password (minimo 6 caratteri)">
+  <button class="bottone principale" id="bottoneAccedi" type="button">Accedi</button>
+  <button class="bottone" id="bottoneRegistrati" type="button">Registrati</button>
+  <p id="messaggioAccesso"></p>
+</div>
+
+<div id="schermataApp">
+  <div id="intestazione">
+    <h1 id="titolo">Diario 3DS</h1>
+    <span id="saluto"></span>
+    <button class="bottone" id="bottoneEsci" type="button">Esci</button>
+  </div>
+
+  <div id="avvisoDomani"></div>
+
+  <form id="formNuova" onsubmit="return false;">
+    <select class="campo" id="sceltaTipo">
+      <option value="verifica">Verifica</option>
+      <option value="interrogazione">Interrogazione</option>
+      <option value="compito">Compito</option>
+      <option value="evento">Evento / gita</option>
+    </select>
+    <input class="campo" id="campoMateria" type="text" placeholder="Materia (facoltativa)">
+    <input class="campo" id="campoData" type="date">
+    <input class="campo" id="campoTitolo" type="text" placeholder="Titolo" maxlength="100">
+    <input class="campo campo-note" id="campoNote" type="text" placeholder="Note (facoltative)" maxlength="200">
+    <button class="bottone principale" id="bottoneAggiungi" type="button">Aggiungi</button>
+  </form>
+
+  <div id="filtri">
+    <button class="bottone attivo" data-filtro="tutte" type="button">Tutto</button>
+    <button class="bottone" data-filtro="verifica" type="button">Verifiche</button>
+    <button class="bottone" data-filtro="interrogazione" type="button">Interrogazioni</button>
+    <button class="bottone" data-filtro="compito" type="button">Compiti</button>
+    <button class="bottone" data-filtro="evento" type="button">Eventi</button>
+  </div>
+
+  <div id="elenco"></div>
+
+  <div id="preferenze">
+    <h2>Avvisi (il giorno prima)</h2>
+    <label><input type="checkbox" id="spuntaPush"> Notifica sul telefono</label>
+    <label><input type="checkbox" id="spuntaEmail"> Email</label>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
