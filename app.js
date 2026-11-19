@@ -1,10 +1,6 @@
 var URL_SUPABASE = 'https://lrcjipumypfjbnhhgjlp.supabase.co';
 var CHIAVE_SUPABASE = 'sb_publishable__kDUk8RsXBy_HQf55EF14w_VJtgGmCi';
 
-// 1) Incolla qui i dati del tuo progetto Supabase (Project Settings -> API)
-var URL_SUPABASE = 'INCOLLA_QUI_URL';
-var CHIAVE_SUPABASE = 'INCOLLA_QUI_CHIAVE_ANON';
-
 // Pulizia di sicurezza: toglie spazi, caratteri invisibili e percorsi dopo .supabase.co
 URL_SUPABASE = URL_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '').replace(/^(https?:\/\/[^\/]+).*$/, '$1');
 CHIAVE_SUPABASE = CHIAVE_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '');
