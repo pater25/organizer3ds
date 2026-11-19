@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#14213D">
+<meta name="apple-mobile-web-app-title" content="Diario 3DS">
+<meta name="theme-color" content="#F2F2F7">
 <title>Diario 3DS</title>
 <link rel="stylesheet" href="stile.css">
 </head>
@@ -12,7 +13,8 @@
 
 <div id="schermataAccesso">
   <h1 id="titoloAccesso">Diario 3DS</h1>
-  <input class="campo" id="campoNome" type="text" placeholder="Nome (solo per registrarti)">
+  <p id="sottotitoloAccesso">Il diario condiviso della classe</p>
+  <input class="campo" id="campoNome" type="text" placeholder="Nome e cognome (solo per registrarti)">
   <input class="campo" id="campoEmail" type="email" placeholder="Email">
   <input class="campo" id="campoPassword" type="password" placeholder="Password (minimo 6 caratteri)">
   <button class="bottone principale" id="bottoneAccedi" type="button">Accedi</button>
@@ -22,41 +24,48 @@
 
 <div id="schermataApp">
   <div id="intestazione">
-    <h1 id="titolo">Diario 3DS</h1>
+    <h1 id="titoloVista">Home</h1>
     <span id="saluto"></span>
-    <button class="bottone" id="bottoneEsci" type="button">Esci</button>
   </div>
 
-  <div id="avvisoDomani"></div>
+  <div class="vista" id="vistaHome"></div>
+  <div class="vista" id="vistaCalendario"></div>
+  <div class="vista" id="vistaLista"></div>
+  <div class="vista" id="vistaMaterie"></div>
+  <div class="vista" id="vistaAdmin"></div>
+  <div class="vista" id="vistaIo"></div>
 
-  <form id="formNuova" onsubmit="return false;">
+  <button id="bottoneNuovo" type="button" aria-label="Nuova voce">+</button>
+
+  <div id="barraSchede">
+    <button class="scheda attiva" data-vista="home" type="button">Home</button>
+    <button class="scheda" data-vista="calendario" type="button">Calendario</button>
+    <button class="scheda" data-vista="lista" type="button">Lista</button>
+    <button class="scheda" data-vista="materie" type="button">Materie</button>
+    <button class="scheda" id="schedaAdmin" data-vista="admin" type="button">Admin</button>
+    <button class="scheda" data-vista="io" type="button">Io</button>
+  </div>
+</div>
+
+<div id="finestra">
+  <div id="foglio">
+    <h2 id="titoloFinestra">Nuova voce</h2>
     <select class="campo" id="sceltaTipo">
       <option value="verifica">Verifica</option>
       <option value="interrogazione">Interrogazione</option>
       <option value="compito">Compito</option>
       <option value="evento">Evento / gita</option>
     </select>
-    <input class="campo" id="campoMateria" type="text" placeholder="Materia (facoltativa)">
+    <select class="campo" id="sceltaMateria"></select>
     <input class="campo" id="campoData" type="date">
     <input class="campo" id="campoTitolo" type="text" placeholder="Titolo" maxlength="100">
-    <input class="campo campo-note" id="campoNote" type="text" placeholder="Note (facoltative)" maxlength="200">
-    <button class="bottone principale" id="bottoneAggiungi" type="button">Aggiungi</button>
-  </form>
-
-  <div id="filtri">
-    <button class="bottone attivo" data-filtro="tutte" type="button">Tutto</button>
-    <button class="bottone" data-filtro="verifica" type="button">Verifiche</button>
-    <button class="bottone" data-filtro="interrogazione" type="button">Interrogazioni</button>
-    <button class="bottone" data-filtro="compito" type="button">Compiti</button>
-    <button class="bottone" data-filtro="evento" type="button">Eventi</button>
-  </div>
-
-  <div id="elenco"></div>
-
-  <div id="preferenze">
-    <h2>Avvisi (il giorno prima)</h2>
-    <label><input type="checkbox" id="spuntaPush"> Notifica sul telefono</label>
-    <label><input type="checkbox" id="spuntaEmail"> Email</label>
+    <input class="campo" id="campoArgomenti" type="text" placeholder="Argomenti o capitoli da studiare" maxlength="200">
+    <input class="campo" id="campoLink" type="url" placeholder="Link (https://...)" maxlength="300">
+    <input class="campo" id="campoNote" type="text" placeholder="Note" maxlength="200">
+    <div id="azioniFinestra">
+      <button class="bottone" id="bottoneAnnulla" type="button">Annulla</button>
+      <button class="bottone principale" id="bottoneSalva" type="button">Salva</button>
+    </div>
   </div>
 </div>
 
