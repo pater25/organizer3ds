@@ -152,3 +152,7 @@ button, input, select { font-family: inherit; }
   .partecipazione, .riga-utente { border-color: #38383A; }
   .eroe .bottone { color: #0A60D6; }
 }
+
+/* avviso di conferma */
+.avviso-toast { position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); max-width: 90%; padding: 12px 18px; border-radius: 14px; background: rgba(28, 28, 30, 0.92); color: #FFFFFF; font-size: 15px; font-weight: 600; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 60; }
+.avviso-toast.visibile { opacity: 1; }
