@@ -1,6 +1,10 @@
 var URL_SUPABASE = 'https://lrcjipumypfjbnhhgjlp.supabase.co';
 var CHIAVE_SUPABASE = 'sb_publishable__kDUk8RsXBy_HQf55EF14w_VJtgGmCi';
 
+// 1) Incolla qui i dati del tuo progetto Supabase (Project Settings -> API)
+var URL_SUPABASE = 'INCOLLA_QUI_URL';
+var CHIAVE_SUPABASE = 'INCOLLA_QUI_CHIAVE_ANON';
+
 // Pulizia di sicurezza: toglie spazi, caratteri invisibili e percorsi dopo .supabase.co
 URL_SUPABASE = URL_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '').replace(/^(https?:\/\/[^\/]+).*$/, '$1');
 CHIAVE_SUPABASE = CHIAVE_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '');
@@ -424,8 +428,26 @@ async function salvaVoce() {
   };
   var r = voceInModifica ? await db.from('voci').update(dati).eq('id', voceInModifica.id) : await db.from('voci').insert(dati);
   if (errore(r)) return;
+  var nuova = !voceInModifica;
+  voceInModifica = null;
   el('finestra').className = '';
-  caricaTutto();
+  if (nuova) {
+    giornoScelto = dati.data;
+    meseVisto = daIso(dati.data); meseVisto.setDate(1);
+    filtroTipo = 'tutte'; filtroMateria = 'tutte';
+    mostraPassate = dati.data < oggiIso();
+    vista = 'lista';
+  }
+  await caricaTutto();
+  if (nuova) avviso('Salvata per ' + dataLunga(dati.data));
+}
+function avviso(testo) {
+  var t = el('avvisoToast');
+  if (!t) { t = crea('div', 'avviso-toast'); t.id = 'avvisoToast'; document.body.appendChild(t); }
+  t.textContent = testo;
+  t.className = 'avviso-toast visibile';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function () { t.className = 'avviso-toast'; }, 3000);
 }
 
 // ---------- calendario del telefono e WhatsApp ----------
