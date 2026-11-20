@@ -1,12 +1,13 @@
 var URL_SUPABASE = 'https://lrcjipumypfjbnhhgjlp.supabase.co';
 var CHIAVE_SUPABASE = 'sb_publishable__kDUk8RsXBy_HQf55EF14w_VJtgGmCi';
 
+
 // Pulizia di sicurezza: toglie spazi, caratteri invisibili e percorsi dopo .supabase.co
 URL_SUPABASE = URL_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '').replace(/^(https?:\/\/[^\/]+).*$/, '$1');
 CHIAVE_SUPABASE = CHIAVE_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '');
 var db = supabase.createClient(URL_SUPABASE, CHIAVE_SUPABASE);
 
-var materie = ['Italiano', 'Storia', 'Matematica', 'Fisica', 'Chimica', 'Biologia', 'Inglese', 'Tedesco', 'Informatica', 'TPSIT', 'Telecomunicazioni', 'Scienze motorie', 'Generale'];
+var materie = ['Italiano', 'Storia', 'Inglese', 'Tedesco', 'Matematica', 'Scienze motorie', 'Religione / Alternativa', 'Informatica', 'Sistemi e Reti', 'TPSIT', 'Telecomunicazioni', 'Generale'];
 var nomiTipo = { verifica: 'Verifica', interrogazione: 'Interrogazione', compito: 'Compito', evento: 'Evento' };
 var nomiTipoPlurale = { verifica: 'Verifiche', interrogazione: 'Interrogazioni', compito: 'Compiti', evento: 'Eventi' };
 var titoliVista = { home: 'Home', calendario: 'Calendario', lista: 'Lista', materie: 'Materie', admin: 'Admin', io: 'Io' };
@@ -293,11 +294,12 @@ function disegnaLista() {
   else raggruppaPerData(c, lista);
 }
 
+function materiaDi(v) { return materie.indexOf(v.materia) !== -1 ? v.materia : (v.materia ? 'Altre materie' : 'Generale'); }
 function disegnaMaterie() {
   var c = el('vistaMaterie'); c.innerHTML = '';
   var oggi = oggiIso(), senza = [];
-  materie.forEach(function (m) {
-    var lista = voci.filter(function (v) { return v.data >= oggi && (v.materia || 'Generale') === m; });
+  materie.concat(['Altre materie']).forEach(function (m) {
+    var lista = voci.filter(function (v) { return v.data >= oggi && materiaDi(v) === m; });
     if (!lista.length) { senza.push(m); return; }
     var s = sezione(m, lista.length + (lista.length === 1 ? ' voce' : ' voci'));
     lista.forEach(function (v) { s.appendChild(cartaVoce(v, true)); });
@@ -404,7 +406,7 @@ function apriFinestra(v) {
   voceInModifica = v || null;
   el('titoloFinestra').textContent = v ? 'Modifica voce' : 'Nuova voce';
   el('sceltaTipo').value = v ? v.tipo : 'verifica';
-  el('sceltaMateria').value = v ? (v.materia || 'Generale') : 'Italiano';
+  el('sceltaMateria').value = v ? (materie.indexOf(v.materia) !== -1 ? v.materia : 'Generale') : 'Italiano';
   el('campoData').value = v ? v.data : (vista === 'calendario' ? giornoScelto : piuGiorni(oggiIso(), 1));
   el('campoTitolo').value = v ? v.titolo : '';
   el('campoArgomenti').value = v && v.argomenti ? v.argomenti : '';
