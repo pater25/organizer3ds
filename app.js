@@ -1,10 +1,6 @@
 var URL_SUPABASE = 'https://lrcjipumypfjbnhhgjlp.supabase.co';
 var CHIAVE_SUPABASE = 'sb_publishable__kDUk8RsXBy_HQf55EF14w_VJtgGmCi';
 
-// 1) Incolla qui i dati del tuo progetto Supabase (Project Settings -> API)
-var URL_SUPABASE = 'INCOLLA_QUI_URL';
-var CHIAVE_SUPABASE = 'INCOLLA_QUI_CHIAVE_ANON';
-
 // Pulizia di sicurezza: toglie spazi, caratteri invisibili e percorsi dopo .supabase.co
 URL_SUPABASE = URL_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '').replace(/^(https?:\/\/[^\/]+).*$/, '$1');
 CHIAVE_SUPABASE = CHIAVE_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '');
@@ -71,11 +67,16 @@ async function avvia() {
 
 // ---------- dati ----------
 async function caricaTutto() {
-  var a = await db.from('voci').select('*, autore_info:profili(nome)').order('data', { ascending: true });
-  var b = await db.from('partecipazioni').select('*, persona:profili(nome)');
-  var c = await db.from('comunicazioni').select('*, autore_info:profili(nome)').order('creata', { ascending: false });
-  if (a.error) console.error(a.error);
-  voci = a.data || []; risposte = b.data || []; comunicazioni = c.data || [];
+  var a = await db.from('voci').select('*').order('data', { ascending: true });
+  if (a.error) { avviso('Errore nel caricamento delle voci: ' + a.error.message, true); console.error(a.error); return; }
+  var pr = await db.from('profili').select('id, nome');
+  var nomi = {};
+  (pr.data || []).forEach(function (p) { nomi[p.id] = p.nome; });
+  voci = (a.data || []).map(function (v) { v.autore_info = { nome: nomi[v.autore] || 'utente rimosso' }; return v; });
+  var b = await db.from('partecipazioni').select('*');
+  risposte = (b.data || []).map(function (x) { x.persona = { nome: nomi[x.utente] || '?' }; return x; });
+  var c = await db.from('comunicazioni').select('*').order('creata', { ascending: false });
+  comunicazioni = (c.data || []).map(function (m) { m.autore_info = { nome: nomi[m.autore] || 'utente rimosso' }; return m; });
   if (sonoAdmin()) { var d = await db.from('profili').select('*').order('nome'); utenti = d.data || []; }
   disegna();
 }
@@ -427,7 +428,7 @@ async function salvaVoce() {
     argomenti: el('campoArgomenti').value.trim() || null, link: link || null, note: el('campoNote').value.trim() || null
   };
   var r = voceInModifica ? await db.from('voci').update(dati).eq('id', voceInModifica.id) : await db.from('voci').insert(dati);
-  if (errore(r)) return;
+  if (r.error) { avviso('Salvataggio non riuscito: ' + r.error.message, true); return; }
   var nuova = !voceInModifica;
   voceInModifica = null;
   el('finestra').className = '';
@@ -441,13 +442,13 @@ async function salvaVoce() {
   await caricaTutto();
   if (nuova) avviso('Salvata per ' + dataLunga(dati.data));
 }
-function avviso(testo) {
+function avviso(testo, isErrore) {
   var t = el('avvisoToast');
   if (!t) { t = crea('div', 'avviso-toast'); t.id = 'avvisoToast'; document.body.appendChild(t); }
   t.textContent = testo;
-  t.className = 'avviso-toast visibile';
+  t.className = 'avviso-toast visibile' + (isErrore ? ' errore' : '');
   clearTimeout(t._timer);
-  t._timer = setTimeout(function () { t.className = 'avviso-toast'; }, 3000);
+  t._timer = setTimeout(function () { t.className = 'avviso-toast'; }, isErrore ? 8000 : 3000);
 }
 
 // ---------- calendario del telefono e WhatsApp ----------
