@@ -1,7 +1,6 @@
 var URL_SUPABASE = 'https://lrcjipumypfjbnhhgjlp.supabase.co';
 var CHIAVE_SUPABASE = 'sb_publishable__kDUk8RsXBy_HQf55EF14w_VJtgGmCi';
 
-
 // Pulizia di sicurezza: toglie spazi, caratteri invisibili e percorsi dopo .supabase.co
 URL_SUPABASE = URL_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '').replace(/^(https?:\/\/[^\/]+).*$/, '$1');
 CHIAVE_SUPABASE = CHIAVE_SUPABASE.replace(/[\s\u200B-\u200D\uFEFF]/g, '');
@@ -223,8 +222,9 @@ function disegnaHome() {
   var so = sezione('Oggi', dataLunga(oggi));
   riempi(so, voci.filter(function (v) { return v.data === oggi; }), 'Niente in programma per oggi.');
   c.appendChild(so);
-  var sp = sezione('Prossimi giorni', 'fino a ' + dataBreve(fra7));
-  riempi(sp, voci.filter(function (v) { return v.data > domani && v.data <= fra7; }), 'Niente nei prossimi giorni.', true);
+  var piuAvanti = future.filter(function (v) { return v.data > domani; });
+  var sp = sezione('Più avanti', piuAvanti.length ? piuAvanti.length + (piuAvanti.length === 1 ? ' voce' : ' voci') : '');
+  riempi(sp, piuAvanti, 'Niente di programmato per i prossimi giorni.', true);
   c.appendChild(sp);
 }
 
